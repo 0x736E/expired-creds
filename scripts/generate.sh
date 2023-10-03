@@ -21,6 +21,12 @@ declare -a BITS_DSA=(
   "4096"
 )
 
+declare -a BITS_ECDSA=(
+	"256"
+	"384"
+	"521"
+)
+
 declare -a CURVES=(
 	"secp112r1"                                                                                                                                                                                                                                                                                                                                                            
 	"secp112r2"
@@ -105,71 +111,106 @@ declare -a CURVES=(
 	"brainpoolP512t1"
 	"SM2"     
 )
-rm ./ssh_keygen_*
-
 
 function sshkeygen_generate() {
 
-	FORMAT="$1"
+	local FORMAT="$1"
+	local SAMPLE_INDEX="$2"
 
-	ssh-keygen -N "" -m "${FORMAT}" -t dsa -b 1024 -f "./ssh_keygen_"${FORMAT}"_dsa_1024"
+	# NOTE: 
+	# 			Minimum RSA and DSA key size requirements of ssh-keygen mean that
+	# 			some particularly small sizes are not supported, and will cause error.
 
-	ssh-keygen -N "" -m "${FORMAT}" -t ecdsa -b 256 -f "./ssh_keygen_"${FORMAT}"_ecdsa_256"
-	ssh-keygen -N "" -m "${FORMAT}" -t ecdsa -b 384 -f "./ssh_keygen_"${FORMAT}"_ecdsa_384"
-	ssh-keygen -N "" -m "${FORMAT}" -t ecdsa -b 521 -f "./ssh_keygen_"${FORMAT}"_ecdsa_521"
+	# dsa
+	mkdir -p "./ssh_keygen/dsa/${FORMAT}/"
+	for dsa_bitsize in "${BITS_RSA[@]}"
+	do
+		ssh-keygen -N "" -m "${FORMAT}" -t dsa -b "${dsa_bitsize}" -C "" -f "./ssh_keygen/dsa/${FORMAT}/dsa_${dsa_bitsize}_${SAMPLE_INDEX}"
+	done
 
-	ssh-keygen -N "" -m "${FORMAT}" -t ecdsa-sk -f "./ssh_keygen_"${FORMAT}"_ecdsa_sk"
+	# rsa
+	mkdir -p "./ssh_keygen/rsa/${FORMAT}/"
+	for rsa_bitsize in "${BITS_RSA[@]}"
+	do
+		ssh-keygen -N "" -m "${FORMAT}" -t rsa -b "${rsa_bitsize}" -C "" -f "./ssh_keygen/rsa/${FORMAT}/rsa_${rsa_bitsize}_${SAMPLE_INDEX}"
+	done
 
-	ssh-keygen -N "" -m "${FORMAT}" -t ed25519 -b 256 -f "./ssh_keygen_"${FORMAT}"_ed25519_256"
-	ssh-keygen -N "" -m "${FORMAT}" -t ed25519 -b 512 -f "./ssh_keygen_"${FORMAT}"_ed25519_512"
-	ssh-keygen -N "" -m "${FORMAT}" -t ed25519 -b 1024 -f "./ssh_keygen_"${FORMAT}"_ed25519_1024"
-	ssh-keygen -N "" -m "${FORMAT}" -t ed25519 -b 2048 -f "./ssh_keygen_"${FORMAT}"_ed25519_2048"
-	ssh-keygen -N "" -m "${FORMAT}" -t ed25519 -b 4096 -f "./ssh_keygen_"${FORMAT}"_ed25519_4096"
+	# ecdsa
+	mkdir -p "./ssh_keygen/ecdsa/${FORMAT}/"
+	for ecdsa_bitsize in "${BITS_ECDSA[@]}"
+	do
+		ssh-keygen -N "" -m "${FORMAT}" -t ecdsa -b "${ecdsa_bitsize}" -C "" -f "./ssh_keygen/ecdsa/${FORMAT}/ecdsa_${ecdsa_bitsize}_${SAMPLE_INDEX}"
+	done
 
-	ssh-keygen -N "" -m "${FORMAT}" -t ed255190-sk -f "./ssh_keygen_"${FORMAT}"_ed255190_sk"
+	# ed25519
+	ssh-keygen -N "" -m "${FORMAT}" -t ed25519 -C "" -f "./ssh_keygen/ecc/${FORMAT}/ed25519_${SAMPLE_INDEX}"
 
-	ssh-keygen -N "" -m "${FORMAT}" -t rsa -b 1024 -f "./ssh_keygen_"${FORMAT}"_rsa_1024"
-	ssh-keygen -N "" -m "${FORMAT}" -t rsa -b 2048 -f "./ssh_keygen_"${FORMAT}"_rsa_2048"
-	ssh-keygen -N "" -m "${FORMAT}" -t rsa -b 3072 -f "./ssh_keygen_"${FORMAT}"_rsa_3072"
-	ssh-keygen -N "" -m "${FORMAT}" -t rsa -b 4096 -f "./ssh_keygen_"${FORMAT}"_rsa_4096"
 }
 
+function generate_sshkeygen_samples() {
 
-for format in "${FORMATS[@]}"
-do
- :
- sshkeygen_generate "${format}"
-done
+	local SAMPLE_INDEX="${1}"
 
-rm ./ssh_keygen_*.pub
+	for format in "${FORMATS[@]}"
+	do
+		sshkeygen_generate "${format}" "${SAMPLE_INDEX}"
+	done
 
-rm ./openssl_*
+}
 
+function generate_openssl_samples() {
 
-for rsa_bitsize in "${BITS_RSA[@]}"
-do
- :
- openssl genrsa -out "./openssl_rsa_${rsa_bitsize}.pem" "${rsa_bitsize}"
-done
+	local SAMPLE_INDEX="${1}"
 
-
-for dsa_bitsize in "${BITS_DSA[@]}"
-do
- :
-	openssl dsaparam -out "./openssl_dsaparam_${dsa_bitsize}" "${dsa_bitsize}"
-	openssl gendsa -out "./openssl_dsa_${dsa_bitsize}" "./openssl_dsaparam_${dsa_bitsize}"
-done
-
-
-for curve in "${CURVES[@]}"
-do
- :
-	openssl ecparam -name "${curve}" -genkey -noout -out "./openssl_${curve}.pem"
-done
-
-rm ./openssl_dsaparam*
+	# rsa
+	mkdir -p "./openssl/rsa/PEM/"
+	mkdir -p "./openssl/rsa/PKCS8/"
+	for rsa_bitsize in "${BITS_RSA[@]}"
+	do
+		openssl genrsa -out "./openssl/rsa/PEM/rsa_${rsa_bitsize}_${SAMPLE_INDEX}.pem" "${rsa_bitsize}"
+		openssl rsa -in "./openssl/rsa/PEM/rsa_${rsa_bitsize}_${SAMPLE_INDEX}.pem" -pubout -out "./openssl/rsa/PEM/rsa_${rsa_bitsize}_${SAMPLE_INDEX}.pub"
+		openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in "./openssl/rsa/PEM/rsa_${rsa_bitsize}_${SAMPLE_INDEX}.pem" -out "./openssl/rsa/PKCS8/rsa_${rsa_bitsize}_${SAMPLE_INDEX}.key"
+	done
 
 
+	# dsa
+	mkdir -p "./openssl/dsa/PEM/"
+	mkdir -p "./openssl/dsa/PKCS8/"
+	for dsa_bitsize in "${BITS_DSA[@]}"
+	do
+		openssl dsaparam -out "./openssl_dsaparam_${dsa_bitsize}" "${dsa_bitsize}"
+		openssl gendsa -out "./openssl/dsa/PEM/dsa_${dsa_bitsize}_${SAMPLE_INDEX}.pem" "./openssl_dsaparam_${dsa_bitsize}"
+		openssl dsa -in "./openssl/dsa/PEM/dsa_${dsa_bitsize}_${SAMPLE_INDEX}.pem" -pubout -out "./openssl/dsa/PEM/dsa_${dsa_bitsize}_${SAMPLE_INDEX}.pub"
+		openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in "./openssl/dsa/PEM/dsa_${dsa_bitsize}_${SAMPLE_INDEX}.pem" -out "./openssl/dsa/PKCS8/dsa_${dsa_bitsize}_${SAMPLE_INDEX}.key"
+	done
 
 
-pgp --gen-key "[user ID]" --key-type "[key type]" --bits 2048 --passphrase "[passphrase]"
+	# eliptic curve
+	for curve in "${CURVES[@]}"
+	do
+		mkdir -p "./openssl/ecc/${curve}/PEM/"
+		mkdir -p "./openssl/ecc/${curve}/PKCS8/"
+		openssl ecparam -name "${curve}" -genkey -noout -out "./openssl/ecc/${curve}/PEM/${curve}_${SAMPLE_INDEX}.pem"
+		openssl ec -in "./openssl/ecc/${curve}/PEM/${curve}_${SAMPLE_INDEX}.pem" -pubout -out "./openssl/ecc/${curve}/PEM/${curve}_${SAMPLE_INDEX}.pub"
+		openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in "./openssl/ecc/${curve}/PEM/${curve}_${SAMPLE_INDEX}.pem" -out "./openssl/ecc/${curve}/PKCS8/${curve}_${SAMPLE_INDEX}.key"
+	done
+
+}
+
+# generate samples
+function generate() {
+
+
+
+	for SINDEX in {1..10}
+	do
+		echo "Generating sample ${SINDEX}..."
+		generate_sshkeygen_samples "${SINDEX}"
+		generate_openssl_samples "${SINDEX}"
+	done
+
+	rm openssl_dsaparam*
+}
+
+# lets do it!
+generate
