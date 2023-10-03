@@ -6,4 +6,4 @@ These are real API keys, but are not valid to use against any services because t
 
 # LICENSE
 
-Apache-2.0
+MIT
