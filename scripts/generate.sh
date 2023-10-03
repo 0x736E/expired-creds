@@ -6,56 +6,6 @@ declare -a FORMATS=(
   "PEM"
 )
 
-declare -a BITS=(
-  "256"
-  "512"
-  "1024"
-  "2048"
-  "4096"
-  "8192"
-)
-
-
-rm ./ssh_keygen_*
-
-
-function sshkeygen_generate() {
-
-	FORMAT="$1"
-
-	ssh-keygen -N "" -m "${FORMAT}" -t dsa -b 1024 -f "./ssh_keygen_"${FORMAT}"_dsa_1024"
-
-	ssh-keygen -N "" -m "${FORMAT}" -t ecdsa -b 256 -f "./ssh_keygen_"${FORMAT}"_ecdsa_256"
-	ssh-keygen -N "" -m "${FORMAT}" -t ecdsa -b 384 -f "./ssh_keygen_"${FORMAT}"_ecdsa_384"
-	ssh-keygen -N "" -m "${FORMAT}" -t ecdsa -b 521 -f "./ssh_keygen_"${FORMAT}"_ecdsa_521"
-
-	ssh-keygen -N "" -m "${FORMAT}" -t ecdsa-sk -f "./ssh_keygen_"${FORMAT}"_ecdsa_sk"
-
-	ssh-keygen -N "" -m "${FORMAT}" -t ed25519 -b 256 -f "./ssh_keygen_"${FORMAT}"_ed25519_256"
-	ssh-keygen -N "" -m "${FORMAT}" -t ed25519 -b 512 -f "./ssh_keygen_"${FORMAT}"_ed25519_512"
-	ssh-keygen -N "" -m "${FORMAT}" -t ed25519 -b 1024 -f "./ssh_keygen_"${FORMAT}"_ed25519_1024"
-	ssh-keygen -N "" -m "${FORMAT}" -t ed25519 -b 2048 -f "./ssh_keygen_"${FORMAT}"_ed25519_2048"
-	ssh-keygen -N "" -m "${FORMAT}" -t ed25519 -b 4096 -f "./ssh_keygen_"${FORMAT}"_ed25519_4096"
-
-	ssh-keygen -N "" -m "${FORMAT}" -t ed255190-sk -f "./ssh_keygen_"${FORMAT}"_ed255190_sk"
-
-	ssh-keygen -N "" -m "${FORMAT}" -t rsa -b 1024 -f "./ssh_keygen_"${FORMAT}"_rsa_1024"
-	ssh-keygen -N "" -m "${FORMAT}" -t rsa -b 2048 -f "./ssh_keygen_"${FORMAT}"_rsa_2048"
-	ssh-keygen -N "" -m "${FORMAT}" -t rsa -b 3072 -f "./ssh_keygen_"${FORMAT}"_rsa_3072"
-	ssh-keygen -N "" -m "${FORMAT}" -t rsa -b 4096 -f "./ssh_keygen_"${FORMAT}"_rsa_4096"
-}
-
-for format in "${FORMATS[@]}"
-do
- :
- sshkeygen_generate "${format}"
-done
-
-rm ./ssh_keygen_*.pub
-
-
-rm ./openssl_*
-
 declare -a BITS_RSA=(
   "512"
   "1024"
@@ -65,25 +15,11 @@ declare -a BITS_RSA=(
   "8192"
 )
 
-for rsa_bitsize in "${BITS_RSA[@]}"
-do
- :
- openssl genrsa -out "./openssl_rsa_${rsa_bitsize}.pem" "${rsa_bitsize}"
-done
-
-
 declare -a BITS_DSA=(
   "1024"
   "2048"
   "4096"
 )
-
-for dsa_bitsize in "${BITS_DSA[@]}"
-do
- :
-	openssl dsaparam -out "./openssl_dsaparam_${dsa_bitsize}" "${dsa_bitsize}"
-	openssl gendsa -out "./openssl_dsa_${dsa_bitsize}" "./openssl_dsaparam_${dsa_bitsize}"
-done
 
 declare -a CURVES=(
 	"secp112r1"                                                                                                                                                                                                                                                                                                                                                            
@@ -169,6 +105,61 @@ declare -a CURVES=(
 	"brainpoolP512t1"
 	"SM2"     
 )
+rm ./ssh_keygen_*
+
+
+function sshkeygen_generate() {
+
+	FORMAT="$1"
+
+	ssh-keygen -N "" -m "${FORMAT}" -t dsa -b 1024 -f "./ssh_keygen_"${FORMAT}"_dsa_1024"
+
+	ssh-keygen -N "" -m "${FORMAT}" -t ecdsa -b 256 -f "./ssh_keygen_"${FORMAT}"_ecdsa_256"
+	ssh-keygen -N "" -m "${FORMAT}" -t ecdsa -b 384 -f "./ssh_keygen_"${FORMAT}"_ecdsa_384"
+	ssh-keygen -N "" -m "${FORMAT}" -t ecdsa -b 521 -f "./ssh_keygen_"${FORMAT}"_ecdsa_521"
+
+	ssh-keygen -N "" -m "${FORMAT}" -t ecdsa-sk -f "./ssh_keygen_"${FORMAT}"_ecdsa_sk"
+
+	ssh-keygen -N "" -m "${FORMAT}" -t ed25519 -b 256 -f "./ssh_keygen_"${FORMAT}"_ed25519_256"
+	ssh-keygen -N "" -m "${FORMAT}" -t ed25519 -b 512 -f "./ssh_keygen_"${FORMAT}"_ed25519_512"
+	ssh-keygen -N "" -m "${FORMAT}" -t ed25519 -b 1024 -f "./ssh_keygen_"${FORMAT}"_ed25519_1024"
+	ssh-keygen -N "" -m "${FORMAT}" -t ed25519 -b 2048 -f "./ssh_keygen_"${FORMAT}"_ed25519_2048"
+	ssh-keygen -N "" -m "${FORMAT}" -t ed25519 -b 4096 -f "./ssh_keygen_"${FORMAT}"_ed25519_4096"
+
+	ssh-keygen -N "" -m "${FORMAT}" -t ed255190-sk -f "./ssh_keygen_"${FORMAT}"_ed255190_sk"
+
+	ssh-keygen -N "" -m "${FORMAT}" -t rsa -b 1024 -f "./ssh_keygen_"${FORMAT}"_rsa_1024"
+	ssh-keygen -N "" -m "${FORMAT}" -t rsa -b 2048 -f "./ssh_keygen_"${FORMAT}"_rsa_2048"
+	ssh-keygen -N "" -m "${FORMAT}" -t rsa -b 3072 -f "./ssh_keygen_"${FORMAT}"_rsa_3072"
+	ssh-keygen -N "" -m "${FORMAT}" -t rsa -b 4096 -f "./ssh_keygen_"${FORMAT}"_rsa_4096"
+}
+
+
+for format in "${FORMATS[@]}"
+do
+ :
+ sshkeygen_generate "${format}"
+done
+
+rm ./ssh_keygen_*.pub
+
+rm ./openssl_*
+
+
+for rsa_bitsize in "${BITS_RSA[@]}"
+do
+ :
+ openssl genrsa -out "./openssl_rsa_${rsa_bitsize}.pem" "${rsa_bitsize}"
+done
+
+
+for dsa_bitsize in "${BITS_DSA[@]}"
+do
+ :
+	openssl dsaparam -out "./openssl_dsaparam_${dsa_bitsize}" "${dsa_bitsize}"
+	openssl gendsa -out "./openssl_dsa_${dsa_bitsize}" "./openssl_dsaparam_${dsa_bitsize}"
+done
+
 
 for curve in "${CURVES[@]}"
 do
@@ -176,6 +167,9 @@ do
 	openssl ecparam -name "${curve}" -genkey -noout -out "./openssl_${curve}.pem"
 done
 
-# openssl ecparam -name ./openssl_ecparam -genkey -noout -out ./openssl_ec_secp256k1.pem
-
 rm ./openssl_dsaparam*
+
+
+
+
+pgp --gen-key "[user ID]" --key-type "[key type]" --bits 2048 --passphrase "[passphrase]"
