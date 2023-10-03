@@ -117,33 +117,54 @@ function sshkeygen_generate() {
 	local FORMAT="$1"
 	local SAMPLE_INDEX="$2"
 
+	local TARGET_ROOT=""
+	local TARGET_NAME=""
+	local TARGET_PATH=""
+
 	# NOTE: 
 	# 			Minimum RSA and DSA key size requirements of ssh-keygen mean that
 	# 			some particularly small sizes are not supported, and will cause error.
 
 	# dsa
-	mkdir -p "./ssh_keygen/dsa/${FORMAT}/"
 	for dsa_bitsize in "${BITS_RSA[@]}"
 	do
-		ssh-keygen -N "" -m "${FORMAT}" -t dsa -b "${dsa_bitsize}" -C "" -f "./ssh_keygen/dsa/${FORMAT}/dsa_${dsa_bitsize}_${SAMPLE_INDEX}"
+		TARGET_ROOT="./ssh_keygen/dsa/${dsa_bitsize}/${FORMAT}"
+		TARGET_NAME="dsa_${dsa_bitsize}_${SAMPLE_INDEX}"
+		TARGET_PATH="${TARGET_ROOT}/${TARGET_NAME}"
+
+		mkdir -p "${TARGET_ROOT}"
+		ssh-keygen -N "" -m "${FORMAT}" -t dsa -b "${dsa_bitsize}" -C "" -f "${TARGET_PATH}"
 	done
 
 	# rsa
-	mkdir -p "./ssh_keygen/rsa/${FORMAT}/"
 	for rsa_bitsize in "${BITS_RSA[@]}"
 	do
-		ssh-keygen -N "" -m "${FORMAT}" -t rsa -b "${rsa_bitsize}" -C "" -f "./ssh_keygen/rsa/${FORMAT}/rsa_${rsa_bitsize}_${SAMPLE_INDEX}"
+		TARGET_ROOT="./ssh_keygen/rsa/${rsa_bitsize}/${FORMAT}"
+		TARGET_NAME="rsa_${rsa_bitsize}_${SAMPLE_INDEX}"
+		TARGET_PATH="${TARGET_ROOT}/${TARGET_NAME}"
+
+		mkdir -p "${TARGET_ROOT}"
+		ssh-keygen -N "" -m "${FORMAT}" -t rsa -b "${rsa_bitsize}" -C "" -f "${TARGET_PATH}"
 	done
 
 	# ecdsa
-	mkdir -p "./ssh_keygen/ecdsa/${FORMAT}/"
 	for ecdsa_bitsize in "${BITS_ECDSA[@]}"
 	do
-		ssh-keygen -N "" -m "${FORMAT}" -t ecdsa -b "${ecdsa_bitsize}" -C "" -f "./ssh_keygen/ecdsa/${FORMAT}/ecdsa_${ecdsa_bitsize}_${SAMPLE_INDEX}"
+		TARGET_ROOT="./ssh_keygen/ecdsa/${ecdsa_bitsize}/${FORMAT}"
+		TARGET_NAME="ecdsa_${ecdsa_bitsize}_${SAMPLE_INDEX}"
+		TARGET_PATH="${TARGET_ROOT}/${TARGET_NAME}"
+
+		mkdir -p "${TARGET_ROOT}"
+		ssh-keygen -N "" -m "${FORMAT}" -t ecdsa -b "${ecdsa_bitsize}" -C "" -f "${TARGET_PATH}"
 	done
 
-	# ed25519
-	ssh-keygen -N "" -m "${FORMAT}" -t ed25519 -C "" -f "./ssh_keygen/ecc/${FORMAT}/ed25519_${SAMPLE_INDEX}"
+	ed25519
+	TARGET_ROOT="./ssh_keygen/ecc/ed2551/${ecdsa_bitsize}/${FORMAT}"
+	TARGET_NAME="ecdsa_${ecdsa_bitsize}_${SAMPLE_INDEX}"
+	TARGET_PATH="${TARGET_ROOT}/${TARGET_NAME}"
+
+	mkdir -p "${TARGET_ROOT}"
+	ssh-keygen -N "" -m "${FORMAT}" -t ed25519 -C "" -f "${TARGET_PATH}"
 
 }
 
@@ -162,54 +183,74 @@ function generate_openssl_samples() {
 
 	local SAMPLE_INDEX="${1}"
 
+	local TARGET_ROOT=""
+	local TARGET_NAME=""
+	local PEM_TARGET=""
+	local PUB_TARGET=""
+
 	# rsa
-	mkdir -p "./openssl/rsa/PEM/"
-	mkdir -p "./openssl/rsa/PKCS8/"
 	for rsa_bitsize in "${BITS_RSA[@]}"
 	do
-		openssl genrsa -out "./openssl/rsa/PEM/rsa_${rsa_bitsize}_${SAMPLE_INDEX}.pem" "${rsa_bitsize}"
-		openssl rsa -in "./openssl/rsa/PEM/rsa_${rsa_bitsize}_${SAMPLE_INDEX}.pem" -pubout -out "./openssl/rsa/PEM/rsa_${rsa_bitsize}_${SAMPLE_INDEX}.pub"
-		openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in "./openssl/rsa/PEM/rsa_${rsa_bitsize}_${SAMPLE_INDEX}.pem" -out "./openssl/rsa/PKCS8/rsa_${rsa_bitsize}_${SAMPLE_INDEX}.key"
+		TARGET_ROOT="./openssl/rsa/${rsa_bitsize}/"
+		TARGET_NAME="rsa_${rsa_bitsize}_${SAMPLE_INDEX}"
+		PEM_TARGET="${TARGET_ROOT}/PEM/${TARGET_NAME}.pem"
+		PUB_TARGET="${TARGET_ROOT}/PEM/${TARGET_NAME}.pub"
+		PKCS8_TARGET="${TARGET_ROOT}/PKCS8/${TARGET_NAME}.key"
+
+		mkdir -p "${TARGET_ROOT}/PEM/"
+		mkdir -p "${TARGET_ROOT}/PKCS8/"
+
+		openssl genrsa -out "${PEM_TARGET}" "${rsa_bitsize}"
+		openssl rsa -in "${PEM_TARGET}" -pubout -out "${PUB_TARGET}"
+		openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in "${PEM_TARGET}" -out "${PKCS8_TARGET}"
 	done
 
 
 	# dsa
-	mkdir -p "./openssl/dsa/PEM/"
-	mkdir -p "./openssl/dsa/PKCS8/"
 	for dsa_bitsize in "${BITS_DSA[@]}"
 	do
-		openssl dsaparam -out "./openssl_dsaparam_${dsa_bitsize}" "${dsa_bitsize}"
-		openssl gendsa -out "./openssl/dsa/PEM/dsa_${dsa_bitsize}_${SAMPLE_INDEX}.pem" "./openssl_dsaparam_${dsa_bitsize}"
-		openssl dsa -in "./openssl/dsa/PEM/dsa_${dsa_bitsize}_${SAMPLE_INDEX}.pem" -pubout -out "./openssl/dsa/PEM/dsa_${dsa_bitsize}_${SAMPLE_INDEX}.pub"
-		openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in "./openssl/dsa/PEM/dsa_${dsa_bitsize}_${SAMPLE_INDEX}.pem" -out "./openssl/dsa/PKCS8/dsa_${dsa_bitsize}_${SAMPLE_INDEX}.key"
+		TARGET_ROOT="./openssl/dsa/${dsa_bitsize}/"
+		TARGET_NAME="rsa_${dsa_bitsize}_${SAMPLE_INDEX}"
+		PEM_TARGET="${TARGET_ROOT}/PEM/${TARGET_NAME}.pem"
+		PUB_TARGET="${TARGET_ROOT}/PEM/${TARGET_NAME}.pub"
+		PKCS8_TARGET="${TARGET_ROOT}/PKCS8/${TARGET_NAME}.key"
+
+		mkdir -p "${TARGET_ROOT}/PEM/"
+		mkdir -p "${TARGET_ROOT}/PKCS8/"
+
+		openssl dsaparam -genkey -noout -out "${PEM_TARGET}" "${dsa_bitsize}"
+		openssl dsa -in "${PEM_TARGET}" -pubout -out "${PUB_TARGET}"
+		openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in "${PEM_TARGET}" -out "${PKCS8_TARGET}"
 	done
 
 
 	# eliptic curve
 	for curve in "${CURVES[@]}"
 	do
-		mkdir -p "./openssl/ecc/${curve}/PEM/"
-		mkdir -p "./openssl/ecc/${curve}/PKCS8/"
-		openssl ecparam -name "${curve}" -genkey -noout -out "./openssl/ecc/${curve}/PEM/${curve}_${SAMPLE_INDEX}.pem"
-		openssl ec -in "./openssl/ecc/${curve}/PEM/${curve}_${SAMPLE_INDEX}.pem" -pubout -out "./openssl/ecc/${curve}/PEM/${curve}_${SAMPLE_INDEX}.pub"
-		openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in "./openssl/ecc/${curve}/PEM/${curve}_${SAMPLE_INDEX}.pem" -out "./openssl/ecc/${curve}/PKCS8/${curve}_${SAMPLE_INDEX}.key"
+		TARGET_ROOT="./openssl/ecc/${curve}/"
+		TARGET_NAME="rsa_${curve}_${SAMPLE_INDEX}"
+		PEM_TARGET="${TARGET_ROOT}/PEM/${TARGET_NAME}.pem"
+		PUB_TARGET="${TARGET_ROOT}/PEM/${TARGET_NAME}.pub"
+		PKCS8_TARGET="${TARGET_ROOT}/PKCS8/${TARGET_NAME}.key"
+
+		mkdir -p "${TARGET_ROOT}/PEM/"
+		mkdir -p "${TARGET_ROOT}/PKCS8/"
+
+		openssl ecparam -name "${curve}" -genkey -noout -out "${PEM_TARGET}"
+		openssl ec -in "${PEM_TARGET}" -pubout -out "${PUB_TARGET}"
+		openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in "${PEM_TARGET}" -out "${PKCS8_TARGET}"
 	done
 
 }
 
 # generate samples
 function generate() {
-
-
-
 	for SINDEX in {1..10}
 	do
 		echo "Generating sample ${SINDEX}..."
 		generate_sshkeygen_samples "${SINDEX}"
 		generate_openssl_samples "${SINDEX}"
 	done
-
-	rm openssl_dsaparam*
 }
 
 # lets do it!
