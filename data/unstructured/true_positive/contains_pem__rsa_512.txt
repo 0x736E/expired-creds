@@ -1,0 +1,23 @@
+Hi Bartosz,
+
+I’m Josh, and I’m a manager at HackedCompany. I cannot log in to my system as my key isn't wroking it says.
+
+I hope this key can halp you to set up my credentials:
+
+
+-----BEGIN PRIVATE KEY-----
+MIIBVQIBADANBgkqhkiG9w0BAQEFAASCAT8wggE7AgEAAkEAsL6gKH+i+QTPMFtv
+5S8GQx2Say8yVZtDHrVxCMrPBX2y79bHVmoCj3FqBaR8As3vdq5k554T0ocCdD2k
+54YY3wIDAQABAkBVL5t7yYDgKrw9n2R//rky8fbXKElHT2z7SRIw3acICq9+sXP+
+T2W2ylKlEbKdr9t5SLs3/xOXzPQHRfaAi/wxAiEA1V6KpgI8LpBu1Kah7JiYdr+i
+/uIhHbaPJFtvl3B2jzcCIQDUDswrUMvVz17227JNi7F4epUh0sywjGgy3oIyA0AH
+mQIgRV25AYNUgWbfQS7zEXICjwh6OxbU4U4Kdy1qt/cN9D0CIQCgP3JwhUUUFPpJ
+iCpMyXTae5/5CGigPep8DoPKsYQQeQIhAJE894q2rYxgUvz4zsCB1raCFeONFWdM
+dqXqEeoFoKgR
+-----END PRIVATE KEY-----
+
+I’d appreciate the opportunity to chat further if you have a moment. Please add a meeting time to my calendar with this link.
+
+Thanks for your help.
+
+Talk soon,
